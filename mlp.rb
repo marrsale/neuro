@@ -1,5 +1,4 @@
 require './neuron.rb'
-require 'pry'
 # Multilayer Perceptron
 class MLP
   attr_reader :last_error_term
