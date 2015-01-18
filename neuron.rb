@@ -13,10 +13,10 @@ class Neuron
   # - deriv_f (Proc): a lambda with the derivative of the activation function, used for gradient descent backpropagation;
   #                   if none provided, there is a default
   #                   TODO: incorporate the derivator method for generic derivations when none provided
-  def initialize(opts={})
+  def initialize(opts)
     # pass block for non-default activation function (takes two arguments, a weight and a network input)
     # initialize weight and references to predecessors/successors
-    @bias_weight  = 0
+    @bias_weight  = 0.00
     @input_node   = opts[:input_node] || false
     @predecessors = opts[:predecessors] # array of neurons
     @successors   = opts[:successors] # ''
@@ -28,9 +28,9 @@ class Neuron
       @predecessors.each do |pred|
         @edges[pred] = initialize_edge
       end
+
       # initialize the activation function and its derivative
       # by default the activation function will be logistic
-
       @activation_function = opts[:activation_f]  || -> x { 1/(1+Math.exp(-1*(x))) }
       @activation_deriv    = opts[:deriv_f]       || -> y { y*(1-y) }
       # TODO: if activation_f, but no deriv_f provided, call derivator(opts[:activation_f]) to create a lambda that is the approximate derivative
@@ -69,20 +69,20 @@ class Neuron
   private
   # returns a randomized edge weight for when the neuron is created
   # takes a range object, or defaults to a value between 0 and 1
-  def initialize_edge(range=(0..1.00))
+  def initialize_edge(range=(-1.00..1.00))
     rand range
   end
 
   # TODO: debug? test?
   # returns a lambda that is the derivative function of a provided lambda argument
   # the derivative is required for gradient descent; if the
-  def derivator(func)
-    if func.is_a? Proc
-      -> x {
-        ((func.(x+1e-13) - (func.(x-1e-13)) / (2e-13)
-      }
-    else
-      raise "Neuron#derivator must be given a Proc as an argument; #{func.class.name} was provided"
-    end
-  end
+  # def derivator(func)
+  #   if func.is_a? Proc
+  #     (-> x {
+  #       ((func.(x+1e-13) - (func.(x-1e-13))/(2e-13)
+  #     })
+  #   else
+  #     raise "Neuron#derivator must be given a Proc as an argument; #{func.class.name} was provided"
+  #   end
+  # end
 end
