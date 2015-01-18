@@ -11,7 +11,8 @@ to install the gems in the Gemfile, and then the program can be executed with
 
 Due to the randomness of the neurons when they are initialized, performance can be highly variable.  Here is some actual sample output from a run:
 
-```bundle exec ruby main.rb
+```
+bundle exec ruby main.rb
 For iteration #2000, error term is 0.003656866482768353.
 
 .
