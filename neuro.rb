@@ -2,6 +2,7 @@ require './neuron.rb'
 require 'pry'
 # Multilayer Perceptron
 class MLP
+  attr_reader :last_error_term
   # NOTES
   # TODO: LEARNING RATE PARAM?
   #       - fix this at one for now, for pure gradient descent
@@ -21,7 +22,7 @@ class MLP
   #   @mlp = MLP.new(input_size: 2, hidden_size: 2, output_size: 1)
   def initialize(opts)
     # initialize math
-    @learning_rate_param             = 0.20
+    @learning_rate_param             = 0.20 # TODO: not doing anything with this currently
     @propagation_function            = opts[:propagation_f]     || lambda { |x| 1/(1+Math.exp(-1*(x))) }
     @derivative_propagation_function = opts[:propagation_deriv] || lambda { |y| y*(1-y) }
 
@@ -68,10 +69,11 @@ class MLP
 
   # Method used for evaluating an input vector
   # Returns a vector of outputs from the output layer neurons
+  # NOTE: this method is named with a bang because it changes the state of the network
   # ex. for an instance of MLP, @mlp, that has been trained the XOR function:
   #   @mlp.evaluate([1,1]) # => [0]
   #   @mlp.evaulate([0,1]) # => [1]
-  def evaluate(input_set)
+  def evaluate!(input_set)
     # FEED FORWARD
     # 1. Apply input vectors to input neurons
     @inputs = input_set
@@ -97,57 +99,61 @@ class MLP
     end
 
     # 5. Calculate the output values for the output layer
-    result = output.map(&:output)
+    @last_result = output.map(&:output)
   end
 
   ##THE ALGORITHM (for a MLP with one hidden layer)
-  # example for training an MLP to learn the XOR function
-  # #train_pattern()
+  # Method used for training the network to a specific set of inputs
   # Returns its error term after every calculation
-  # 4000.times do
-  #   @mlp.train_pattern(input: [1,1], output: [0]) # => Float
-  #   @mlp.train_pattern(input: [0,1], output: [1]) # => Float
-  #   @mlp.train_pattern(input: [1,0], output: [1]) # => Float
-  #   @mlp.train_pattern(input: [0,0], output: [0]) # => Float
-  # end
-  # def train_pattern(training_set)
-  #   result = evaluate(training_set[:input])
-  #
-  #   # BACKPROPAGATE ERRORS
-  #   # 6. Calculate error terms for the output units
-  #   #    Don't apply the changes yet; calculate and set them aside until we calculate errors for whole network
-  #   output_errors = output.map.with_index do |neuron, j|
-  #     # TODO
-  #     result = (training_set[:output][j] - neuron.output)*(DERIVATIVE_OF_OUTPUT_ACTIVATION_FUNCTION_ON_NETINPUT)
+  # NOTE: this method is named with a bang because it changes the state of the network
+  # example for training an MLP to learn the XOR function
+  #   4000.times do
+  #     @mlp.train_pattern!(input: [1,1], output: [0]) # => Float
+  #     @mlp.train_pattern!(input: [0,1], output: [1]) # => Float
+  #     @mlp.train_pattern!(input: [1,0], output: [1]) # => Float
+  #     @mlp.train_pattern!(input: [0,0], output: [0]) # => Float
   #   end
-  #
-  #   # 7. Calculate the error terms for the hidden layer neurons
-  #   hidden_errors = hidden.map.with_index do |neuron, j|
-  #     sum = neuron.successors.inject(0) do |acc, succ|
-  #       acc += output_errors[j] * neuron.edge(succ)
-  #     end
-  #     # TODO
-  #     result = (DERIVATIVE_OF_HIDDEN_ACTIVATION_FUNCTION_ON_NETINPUT)*(sum)
-  #   end
-  #
-  #   # 8. Update weights on output layer
-  #   output.each.with_index do |neuron, j|
-  #     neuron.predecessors.each do |pred|
-  #       neuron.edge(pred) += (@learning_rate_param*(output_errors[j])*(pred.output))
-  #     end
-  #   end
-  #
-  #   # 9. Update weights on hidden layer
-  #   hidden.each.with_index do |neuron, j|
-  #     neuron.predecessors.each do |pred|
-  #       neuron.edge(pred) += (@learning_rate_param*(hidden_errors[j])*(pred.output))
-  #     end
-  #   end
-  #
-  #   # 10. Calculate the error term; this is the metric for how well the network is learning
-  #   err_sum = output_errors.inject(0) do |sum, error|
-  #     sum + (error ** 2)
-  #   end
-  #   error_term = (err_sum/2)
-  # end # def train_pattern()
+  def train_pattern!(training_set)
+    # First have the network evaluate its input so we can see how well we did
+    evaluate!(training_set[:input])
+
+    # BACKPROPAGATE ERRORS
+    # 6. Calculate error terms for the output units
+    #    Don't apply the changes yet; calculate and set them aside until we calculate errors for whole network
+    output_errors = output.map.with_index do |neuron, j|
+      # TODO: DERIVATIVE OF OUTPUT ACTIVATION FUNCTION ON NETINPUT(?)
+      # we return an array of two elements, the error value and the neuron it belongs to
+      # this is for keying purposes later when we need to update the edges
+      [neuron, ((training_set[:output][j] - neuron.output)*(neuron.gradient))]
+    end
+
+    # 7. Calculate the error terms for the hidden layer neurons
+    hidden_errors = hidden.map.with_index do |neuron, j|
+      sum = output_errors.inject(0) do |acc, succ|
+        acc += succ[1] * neuron.edge(succ[0])
+      end
+      # TODO: DERIVATIVE OF HIDDEN ACTIVATION FUNCTION ON NETINPUT(?)
+      [neuron, (neuron.gradient)*(sum)]
+    end
+
+    # 8. Update weights on output layer
+    output.each.with_index do |neuron, j|
+      neuron.predecessors.each do |pred|
+        neuron.update_edge!(pred, (neuron.edge(pred) + (@learning_rate_param)*(output_errors[j][1])*(pred.output)))
+      end
+    end
+
+    # 9. Update weights on hidden layer
+    hidden.each.with_index do |neuron, j|
+      neuron.predecessors.each do |pred|
+        neuron.update_edge!(pred, (neuron.edge(pred) + (@learning_rate_param)*(hidden_errors[j][1])*(pred.output)))
+      end
+    end
+
+    # 10. Calculate the error term; this is the metric for how well the network is learning
+    err_sum = output_errors.inject(0) do |sum, error|
+      sum + (error[1] ** 2)
+    end
+    @last_error_term = (err_sum/2)
+  end # def train_pattern()
 end # class MLP

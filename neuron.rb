@@ -52,12 +52,30 @@ class Neuron
     end
   end
 
+  # Method for returning the derivative of the activation function on the net input, to determine
+  # the slope of function, or rate of change, which is a coefficient used to alter the learning rate
+  def gradient
+    @activation_deriv.call(output) # TODO: or do we call on netinput???
+  end
+
+  # Method for updating the weight of an edge between two neurons, when given the neuron this is connected to
+  # and the new weight
+  def update_edge!(neuron, new_weight)
+    iff_neuron neuron
+    if !(@edges[neuron].nil?)
+      @edges[neuron] = new_weight
+    else
+      neuron.update_edge!(self, new_weight)
+    end
+  end
+
   # Return the edge between self and a connected neuron
   # note that a neuron only retains edges to its predecessor for simplicity
   # however, if one has two connected neurons the edge can be accessed from either direction:
   #   neuron1.edge(neuron2) #
   #   neuron2.edge(neuron1) # both calls return the same result
   def edge(neuron)
+    iff_neuron neuron
     # the edge either belongs to self or the other neuron, go get it
     @edges[neuron] || neuron.edge(self)
   end
@@ -67,6 +85,11 @@ class Neuron
   end
 
   private
+
+  def iff_neuron(neuron)
+    raise "A neuron was expected.  Received #{neuron.class.name} instead." unless neuron.is_a? Neuron
+  end
+
   # returns a randomized edge weight for when the neuron is created
   # takes a range object, or defaults to a value between 0 and 1
   def initialize_edge(range=(-1.00..1.00))
