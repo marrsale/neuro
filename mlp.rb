@@ -1,3 +1,5 @@
+# COPYLEFT ORIGINAL AUTHOR ALEXANDER MARRS (github.com/marrsale / twitter.com/alx_mars)
+
 require './neuron.rb'
 # Multilayer Perceptron
 class MLP
@@ -5,18 +7,10 @@ class MLP
   # NOTES
   # TODO: LEARNING RATE PARAM?
   #       - fix this at one for now, for pure gradient descent
-  # TODO: ACTIVATION FUNCTIONS?
-  #       - default if one isn't provided
-  #       - (1/Math.exp((1.0 + Math.exp(-H * value))))  # sigmoid/logistic: classification
-  #       - (some other function here)                  # linear:
-  # TODO: DERIVATIVES OF ACTIVATION FUNCTIONS?
-  #       - y*(1-y)
-  # TODO: GENERIC DERIVATIVE?
-  #       - if a derivative isn't provided, generate a new lambda to calculate derivative using the activation function lambda
+  # TODO: multiple hidden layer initialization
 
   # The Multilayer Perceptron initilaizer
   # MLP::new()
-  # TODO: multiple hidden layer initialization
   # ex. for an MLP with a input layer of size 2, hidden layer size 2, output layer size 1, by default logistic/classification propagation
   #   @mlp = MLP.new(input_size: 2, hidden_size: 2, output_size: 1)
   def initialize(opts)
@@ -120,7 +114,6 @@ class MLP
     # 6. Calculate error terms for the output units
     #    Don't apply the changes yet; calculate and set them aside until we calculate errors for whole network
     output_errors = output.map.with_index do |neuron, j|
-      # TODO: DERIVATIVE OF OUTPUT ACTIVATION FUNCTION ON NETINPUT(?)
       # we return an array of two elements, the error value and the neuron it belongs to
       # this is for keying purposes later when we need to update the edges
       [neuron, ((training_set[:output][j] - neuron.output)*(neuron.gradient))]
@@ -131,7 +124,6 @@ class MLP
       sum = output_errors.inject(0) do |acc, succ|
         acc += succ[1] * neuron.edge(succ[0])
       end
-      # TODO: DERIVATIVE OF HIDDEN ACTIVATION FUNCTION ON NETINPUT(?)
       [neuron, (neuron.gradient)*(sum)]
     end
 
@@ -142,6 +134,7 @@ class MLP
       end
     end
 
+    # TODO: multiple hidden layers
     # 9. Update weights on hidden layer
     hidden.each.with_index do |neuron, j|
       neuron.predecessors.each do |pred|

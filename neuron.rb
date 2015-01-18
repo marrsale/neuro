@@ -1,3 +1,5 @@
+# COPYLEFT ORIGINAL AUTHOR ALEXANDER MARRS (github.com/marrsale / twitter.com/alx_mars)
+
 class Neuron
   attr_accessor :weight
   attr_reader :activation, :predecessors, :successors, :is_input, :bias_weight, :net_input
@@ -96,7 +98,7 @@ class Neuron
     rand range
   end
 
-  # TODO: debug? test?
+  # TODO: debug? test? don't incorporate this until certain it's usable
   # returns a lambda that is the derivative function of a provided lambda argument
   # the derivative is required for gradient descent; if the
   # def derivator(func)
