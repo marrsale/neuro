@@ -22,7 +22,8 @@ class MLP
     @hidden_size = opts[:hidden] || [@input_size] # default case is one hidden layer, same size as input
     @output_size = opts[:output] || @input_size
     @num_layers  = opts[:hidden].count
-    generate_layers! # initialize all the layers with new neurons and connect them
+    # populate the layers with new neurons and connect them
+    generate_layers!
   end
 
   def input
