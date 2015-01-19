@@ -1,5 +1,4 @@
 # COPYLEFT ORIGINAL AUTHOR ALEXANDER MARRS (github.com/marrsale / twitter.com/alx_mars)
-
 class Neuron
   attr_accessor :weight
   attr_reader :activation, :predecessors, :successors, :is_input, :bias_weight, :net_input

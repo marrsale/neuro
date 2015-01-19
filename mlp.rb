@@ -1,59 +1,37 @@
 # COPYLEFT ORIGINAL AUTHOR ALEXANDER MARRS (github.com/marrsale / twitter.com/alx_mars)
-
 require './neuron.rb'
+# require 'pry'
 # Multilayer Perceptron
 class MLP
   attr_reader :last_error_term
-  # NOTES
-  # TODO: LEARNING RATE PARAM?
-  #       - fix this at one for now, for pure gradient descent
-  # TODO: multiple hidden layer initialization
-
   # The Multilayer Perceptron initializer
   # MLP::new()
-  # ex. for an MLP with a input layer of size 2, hidden layer size 2, output layer size 1, by default logistic/classification propagation
-  #   @mlp = MLP.new(input_size: 2, hidden_size: 2, output_size: 1)
-  def initialize(opts)
+  # ex. for an MLP with am input layer of size 2, hidden layer size 2, output layer size 1, by default logistic/classification propagation
+  #   @mlp = MLP.new(input: 2, hidden: [2], output: 1)
+  # ex. for an MLP with an input layer n=2, 2 hidden layers n=2, output layer n=1
+  #   @mlp = MLP.new(input: 2, hidden: [2, 2], output: 1)
+  def initialize(opts={})
     # initialize math
     @learning_rate_param             = 0.20 # TODO: not doing anything with this currently
     @propagation_function            = opts[:propagation_f]     || lambda { |x| 1/(1+Math.exp(-1*(x))) }
     @derivative_propagation_function = opts[:propagation_deriv] || lambda { |y| y*(1-y) }
 
     # initialize layers
-    @input_size      = opts[:input_size]
-    @hidden_size     = opts[:hidden_size] || @input_size
-    @output_size     = opts[:output_size] || @input_size
-    @layers          = { input: [], hidden: [[]], output: [] }
-    generate_layer!(array: input, type: :input, successors: @layers[:hidden], size: @input_size)
-    # TODO: multiple hidden layer generation
-    generate_layer!(array: hidden, predecessors: @layers[:input], successors: @layers[:output], size: @hidden_size)
-    generate_layer!(array: output, predecessors: @layers[:hidden][0], size: @output_size)
-  end
-
-  # returns a layer of neurons, i.e. an array of Neuron objects with appropriate propagation functions and initialized weights
-  def generate_layer!(opts={})
-    layer = opts[:array]
-    if opts[:type] == :input
-      opts[:size].times do
-        layer << Neuron.new(input_node: true,
-                            successors: opts[:successors])
-      end
-    else # generating a hidden or output layer
-      opts[:size].times do
-        layer << Neuron.new(predecessors: opts[:predecessors],
-                            successors: opts[:successors],
-                            activation_f: @propagation_function,
-                            deriv_f: @derivative_propagation_function)
-      end
-    end
+    @input_size  = opts[:input]
+    @hidden_size = opts[:hidden] || @input_size
+    @output_size = opts[:output] || @input_size
+    @num_layers  = opts[:hidden].count
+    @layers      = { input: [], hidden: [], output: [] } # note: hidden will be an array of arrays
+    @num_layers.times { @layers[:hidden] << [] } # stuff appropriate number of  uninitialized layers into hidden array
+    generate_layers! # initialize all the layers with new neurons and connect them
   end
 
   def input
     @layers[:input]
   end
 
-  def hidden(n=0)
-    @layers[:hidden][n]
+  def hidden
+    @layers[:hidden]
   end
 
   def output
@@ -74,13 +52,14 @@ class MLP
       neuron.net_input = @inputs[j]
     end
 
-    # TODO: n many hidden layers
     # 2. Calculate the net input values to the hidden neurons
-    hidden.each do |neuron|
-      sum = neuron.predecessors.inject(0) do |acc, pred|
-        acc += pred.output * neuron.edge(pred)
+    hidden.each do |hidden_layer|
+      hidden_layer.each do |neuron|
+        sum = neuron.predecessors.inject(0) do |acc, pred|
+          acc += pred.output * neuron.edge(pred)
+        end
+        neuron.net_input = neuron.bias_weight + sum
       end
-      neuron.net_input = neuron.bias_weight + sum
     end
 
     # 3, 4. Calculate the outputs from the hidden layer neurons
@@ -122,11 +101,14 @@ class MLP
 
     # TODO: n many hidden layers
     # 7. Calculate the error terms for the hidden layer neurons
-    hidden_errors = hidden.map.with_index do |neuron, j|
-      sum = output_errors.inject(0) do |acc, succ|
-        acc += succ[1] * neuron.edge(succ[0])
+    hidden_errors = {}
+    hidden.each do |hidden_layer|
+      hidden_errors[hidden_layer] = hidden_layer.map.with_index do |neuron, j|
+        sum = output_errors.inject(0) do |acc, succ|
+          acc += succ[1] * neuron.edge(succ[0])
+        end
+        [neuron, (neuron.gradient)*(sum)]
       end
-      [neuron, (neuron.gradient)*(sum)]
     end
 
     # 8. Update weights on output layer
@@ -138,9 +120,11 @@ class MLP
 
     # TODO: n many hidden layers
     # 9. Update weights on hidden layer
-    hidden.each.with_index do |neuron, j|
-      neuron.predecessors.each do |pred|
-        neuron.update_edge!(pred, (neuron.edge(pred) + (@learning_rate_param)*(hidden_errors[j][1])*(pred.output)))
+    hidden.each do |hidden_layer|
+      hidden_layer.each.with_index do |neuron, j|
+        neuron.predecessors.each do |pred|
+          neuron.update_edge!(pred, (neuron.edge(pred) + (@learning_rate_param)*(hidden_errors[hidden_layer][j][1])*(pred.output)))
+        end
       end
     end
 
@@ -150,4 +134,45 @@ class MLP
     end
     @last_error_term = (err_sum/2)
   end # def train_pattern()
+
+  private
+
+  # GENERATE LAYERS ON EACH WITH THEIR APPROPRIATE PREDS/SUCCS
+  def generate_layers!
+    # returns a layer of neurons, i.e. an array of Neuron objects with appropriate propagation functions and initialized weights
+    def generate_layer!(opts={})
+      layer = opts[:array]
+      if opts[:type] == :input
+        opts[:size].times do
+          layer << Neuron.new(input_node: true,
+          successors: opts[:successors])
+        end
+      else # generating a hidden or output layer
+        opts[:size].times do
+          layer << Neuron.new(predecessors: opts[:predecessors],
+          successors: opts[:successors],
+          activation_f: @propagation_function,
+          deriv_f: @derivative_propagation_function)
+        end
+      end
+    end
+    # Generate the input layer
+    generate_layer!(array: input, type: :input, successors: hidden.first, size: @input_size)
+    # Generate the hidden layer(s)
+    @num_layers.times do |n|
+      if n == 0 # first element
+        if @num_layers == 1 #first AND last element
+          generate_layer!(array: hidden.first, predecessors: input, successors: output, size: @hidden_size[n])
+        else # first element, there are more hidden layers to come
+          generate_layer!(array: hidden.first, predecessors: input, successors: hidden[n], size: @hidden_size[n])
+        end
+      elsif n == (@num_layers - 1) # last element, AND not the first element
+        generate_layer!(array: hidden[n], predecessors: hidden[n-1], successors: output, size: @hidden_size[n])
+      else # neither the first or last hidden layer, keep going
+        generate_layer!(array: hidden[n], predecessors: hidden[n-1], successors: hidden[n+1], size: @hidden_size[n])
+      end
+    end
+    # Generate the output layer
+    generate_layer!(array: output, predecessors: hidden.last, size: @output_size)
+  end
 end # class MLP
