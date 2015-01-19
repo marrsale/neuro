@@ -25,3 +25,5 @@ end
 #   pattern = [[1,0].sample,[1,0].sample,[1,0].sample]
 #   puts "Pattern: #{pattern}\t#{@mlp2.evaluate!(pattern)}"
 # end
+
+binding.pry

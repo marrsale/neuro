@@ -34,7 +34,8 @@ Note that as of this writing the only gem included is `pry` which is used to add
 ### TODOS
 
 + Implement MLP#serialize and MLP::from_serialization so that a trained network can be stored
-+ Generalize for multiple hidden layers of arbitrary size
++ ~~Generalize for multiple hidden layers of arbitrary size~~
++ Implement Neuron#eql? and Neuron#hash so that using neurons as keys doesn't end up breaking things (object instances as keys for hashes)
 
 This repo and its contents belong to [Alexander Marrs](github.com/marrsale), but can be used, copied, shared and modified by anyone for any ethical purpose as long as the attributions said author are left in the code.
 ___

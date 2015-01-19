@@ -1,4 +1,5 @@
 # COPYLEFT ORIGINAL AUTHOR ALEXANDER MARRS (github.com/marrsale / twitter.com/alx_mars)
+require 'json'
 require './neuron.rb'
 # require 'pry'
 # Multilayer Perceptron
@@ -18,7 +19,7 @@ class MLP
 
     # initialize layers
     @input_size  = opts[:input]
-    @hidden_size = opts[:hidden] || @input_size
+    @hidden_size = opts[:hidden] || [@input_size] # default case is one hidden layer, same size as input
     @output_size = opts[:output] || @input_size
     @num_layers  = opts[:hidden].count
     generate_layers! # initialize all the layers with new neurons and connect them
@@ -130,6 +131,59 @@ class MLP
     end
     @last_error_term = (err_sum/2)
   end # def train_pattern()
+
+  # returns a hash object containing the full contents of the neural network
+  def marshall
+    {
+      learning_rate_param: @learning_rate_param,
+      input_size: @input_size,
+      hidden_size: @hidden_size,
+      output_size: @output_size,
+      num_layers: @num_layers,
+      input_layer: input.map(&:serialize),
+      hidden_layers: (hidden.map { |hidden_layer| hidden_layer.map(&:serialize) }), # array of arrays of serialized neurons
+      output_layer: output.map(&:serialize)
+    }
+  end
+
+  # writes the marshalled network as yaml
+  def serialize(type=:json)
+    if type == :json
+      marshall.to_json
+    else
+      raise "#{self} can only serialize as JSON data."
+    end
+  end
+
+  # TODO
+  # initializes a new neural network from a serialization object (or file)
+  def self.from_serialization(json_mlp)
+    if json_mlp.is_a? String
+      attrs = JSON.parse(json_mlp)
+    end
+
+    # Create a MLP of correct dimensions
+    @mlp = MLP.new(input: attrs['input_size'], hidden: attrs['hidden_size'], output: attrs['output_size'])
+
+    # Because the newly initialized mlp has random weights, we want to replace these with the weights from our given attrs
+    # Note: because each layer owns the edges between itself and its predecessor layer
+    # Set the weights for the hidden layer(s)
+    @mlp.hidden.each_with_index do |hidden_layer, hidden_layer_index| # for each hidden layer
+      hidden_layer.each_with_index do |neuron, hidden_neuron_index| # and each neuron in the hidden layer
+        neuron.predecessors.each_with_index do |predecessor, predecessor_index| # for each predecessor
+          neuron.update_edge!(predecessor, attrs['hidden_layers'][hidden_layer_index][hidden_neuron_index][predecessor_index])
+        end
+      end
+    end
+
+    # Set the weights for the output layer
+    @mlp.output.each_with_index do |neuron, neuron_index|
+      neuron.predecessors.each_with_index do |predecessor, predecessor_index|
+        neuron.update_edge!(predecessor, attrs['output_layer'][neuron_index][predecessor_index])
+      end
+    end
+    return @mlp
+  end
 
   private
 

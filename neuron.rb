@@ -85,6 +85,17 @@ class Neuron
     @input_node
   end
 
+  # convert the neuron into a serializable object (i.e. hash or array)
+  def serialize
+    if !(@predecessors.nil?) && !(@predecessors.empty?)
+      @predecessors.map do |pred|
+        edge(pred)
+      end
+    else
+      []
+    end
+  end
+
   private
 
   def iff_neuron(neuron)
