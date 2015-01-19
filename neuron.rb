@@ -56,7 +56,7 @@ class Neuron
   # Method for returning the derivative of the activation function on the net input, to determine
   # the slope of function, or rate of change, which is a coefficient used to alter the learning rate
   def gradient
-    @activation_deriv.call(output) # TODO: or do we call on netinput???
+    @activation_deriv.call(output)
   end
 
   # Method for updating the weight of an edge between two neurons, when given the neuron this is connected to
