@@ -21,8 +21,6 @@ class MLP
     @hidden_size = opts[:hidden] || @input_size
     @output_size = opts[:output] || @input_size
     @num_layers  = opts[:hidden].count
-    @layers      = { input: [], hidden: [], output: [] } # note: hidden will be an array of arrays
-    @num_layers.times { @layers[:hidden] << [] } # stuff appropriate number of  uninitialized layers into hidden array
     generate_layers! # initialize all the layers with new neurons and connect them
   end
 
@@ -137,6 +135,8 @@ class MLP
 
   # GENERATE LAYERS ON EACH WITH THEIR APPROPRIATE PREDS/SUCCS
   def generate_layers!
+    @layers      = { input: [], hidden: [], output: [] } # note: hidden will be an array of arrays
+    @num_layers.times { @layers[:hidden] << [] } # stuff appropriate number of  uninitialized layers into hidden array
     # returns a layer of neurons, i.e. an array of Neuron objects with appropriate propagation functions and initialized weights
     def generate_layer!(opts={})
       layer = opts[:array]
