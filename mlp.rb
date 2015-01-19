@@ -147,7 +147,7 @@ class MLP
     }
   end
 
-  # writes the marshalled network as yaml
+  # writes the marshalled network as json
   def serialize(type=:json)
     if type == :json
       marshall.to_json
