@@ -99,7 +99,6 @@ class MLP
       [neuron, ((training_set[:output][j] - neuron.output)*(neuron.gradient))]
     end
 
-    # TODO: n many hidden layers
     # 7. Calculate the error terms for the hidden layer neurons
     hidden_errors = {}
     hidden.each do |hidden_layer|
@@ -118,7 +117,6 @@ class MLP
       end
     end
 
-    # TODO: n many hidden layers
     # 9. Update weights on hidden layer
     hidden.each do |hidden_layer|
       hidden_layer.each.with_index do |neuron, j|
