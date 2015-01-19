@@ -9,7 +9,7 @@ class MLP
   #       - fix this at one for now, for pure gradient descent
   # TODO: multiple hidden layer initialization
 
-  # The Multilayer Perceptron initilaizer
+  # The Multilayer Perceptron initializer
   # MLP::new()
   # ex. for an MLP with a input layer of size 2, hidden layer size 2, output layer size 1, by default logistic/classification propagation
   #   @mlp = MLP.new(input_size: 2, hidden_size: 2, output_size: 1)
@@ -74,6 +74,7 @@ class MLP
       neuron.net_input = @inputs[j]
     end
 
+    # TODO: n many hidden layers
     # 2. Calculate the net input values to the hidden neurons
     hidden.each do |neuron|
       sum = neuron.predecessors.inject(0) do |acc, pred|
@@ -119,6 +120,7 @@ class MLP
       [neuron, ((training_set[:output][j] - neuron.output)*(neuron.gradient))]
     end
 
+    # TODO: n many hidden layers
     # 7. Calculate the error terms for the hidden layer neurons
     hidden_errors = hidden.map.with_index do |neuron, j|
       sum = output_errors.inject(0) do |acc, succ|
@@ -134,7 +136,7 @@ class MLP
       end
     end
 
-    # TODO: multiple hidden layers
+    # TODO: n many hidden layers
     # 9. Update weights on hidden layer
     hidden.each.with_index do |neuron, j|
       neuron.predecessors.each do |pred|
