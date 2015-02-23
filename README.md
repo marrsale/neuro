@@ -16,14 +16,7 @@ to install the gems in the Gemfile, and then the program of choice can be execut
 
 A multilayer perceptron is a mathematical modeling of an animal brain, and can be used in conjunction with training methods (in this case, backpropagation) to train the internal state of the MLP to recognize a function.  The most common use for multilayer perceptrons is for learning to classify data sets that are non-linearly separable, i.e. we can theoretically 'teach' our MLP to recognize classes of things, as long as we can parameterize them meaningfully.
 
-Refer to the `examples/mlp_example.rb` example program included in this repository for an instance of multilayer perceptrons, in which we train our MLP to learn the **Exclusive OR (XOR) function**; that is:
-
-| |0|1|
-|:-:|:-:|-:|
-|**0**|0|1|
-|**1**|1|0|
-
-Or in human terms, we return 1 when (and only when) a single input is 1.  Note that this is a somewhat standard example for demonstrating logistic regression capability, as the XOR function can't be modeled linearly.
+Refer to the `examples/mlp_example.rb` example program included in this repository for an instance of multilayer perceptrons, in which we train our MLP to learn the **Exclusive OR (XOR) function**, or in human terms, we return 1 when (and only when) a single input is 1.  Note that this is a somewhat standard example for demonstrating logistic regression capability, as the XOR function can't be modeled linearly.
 
 In our example program, we first instantiate a new MLP of with two input neurons, two hidden neurons in a single layer, and a single output neuron:
 ```
