@@ -1,11 +1,9 @@
 # COPYLEFT ORIGINAL AUTHOR ALEXANDER MARRS (github.com/marrsale / twitter.com/alx_mars)
 require 'json'
-# require './neuron.rb'
-# require 'pry'
-# Multilayer Perceptron
+# Artificial Neural Network
 class ANN
   attr_reader :last_error_term
-  # The Multilayer Perceptron initializer
+  # The Artificial Neural Network Initializer
   # ANN::new()
   # ex. for an MLP with am input layer of size 2, hidden layer size 2, output layer size 1, by default logistic/classification propagation
   #   @mlp = ANN.new(input: 2, hidden: [2], output: 1)

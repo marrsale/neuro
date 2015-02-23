@@ -26,11 +26,11 @@ Next, we simply iterate 10,000 times over our training set of only four input se
 
 ```
 100000.times do |n|
-mlp.train_pattern!(input: [0,0], output: [0])
-mlp.train_pattern!(input: [0,1], output: [1])
-mlp.train_pattern!(input: [1,1], output: [0])
-mlp.train_pattern!(input: [1,0], output: [1])
-# print stuff here...
+  mlp.train_pattern!(input: [0,0], output: [0])
+  mlp.train_pattern!(input: [0,1], output: [1])
+  mlp.train_pattern!(input: [1,1], output: [0])
+  mlp.train_pattern!(input: [1,0], output: [1])
+  # print stuff here...
 end
 ```
 Here's some terminal output from a sample run (edited for clarity):
@@ -50,13 +50,53 @@ Note that, in this case, our gave the desired result with a relatively small mar
 
 ## [Autoencoder](http://en.wikipedia.org/wiki/Autoencoder)
 
-_Documentation coming soon._
+Autoencoders are often used to reduce the dimensionality of an input space by compressing the information.  This is especially useful when used in conjunction with MLPs, to reduce the size of the input vector and thereby limit the amount of noise and processing which has to be done to train an MLP.  Thus, autoencoders are often used as a preprocessing component, with a fully connected MLP at the end for classification upon the compressed data.
+
+For our sample program, we first must generate a set of inputs for our autoencoder to learn.  We don't really care what they are, so we can generate them randomly:
+
+```
+input_sets = []
+  10.times do
+  input_sets << [[0,1].sample, [0,1].sample, [0,1].sample]
+end
+```
+
+Next, we instantiate our autoencoder:
+```
+autoencoder = ANN.new(input: 3, hidden: [2], output: 3)
+```
+
+Note that we have 3 input units and 3 output units, but only 2 neurons in the hidden layer: this is how the data compression comes about.  Now, we can train our autoencoder to learn the input set (we train it to return its best approximation of the input):
+```
+10000.times do |n|
+  input_sets.each do |set|
+  autoencoder.train_pattern!(input: set, output: set)
+  end
+  # print stuff...
+end
+```
+
+Here's some terminal output from an actual run:
+```
+For iteration #8000, error term is 4.70371785670798e-05.
+For input: [0, 0, 0],	Output: [0, 0, 0]
+For input: [0, 0, 0],	Output: [0, 0, 0]
+For input: [0, 0, 1],	Output: [0, 0, 1]
+For input: [1, 1, 1],	Output: [1, 1, 1]
+For input: [0, 0, 0],	Output: [0, 0, 0]
+For input: [1, 0, 1],	Output: [1, 0, 1]
+For input: [1, 1, 0],	Output: [1, 0, 1]
+For input: [0, 0, 1],	Output: [0, 0, 1]
+For input: [1, 1, 1],	Output: [1, 1, 1]
+For input: [1, 1, 1],	Output: [1, 1, 1]
+```
 
 ## TODOS
 
-+ Implement MLP#serialize and MLP::from_serialization so that a trained network can be stored
++ ~~Implement MLP#serialize and MLP::from_serialization so that a trained network can be stored~~
 + ~~Generalize for multiple hidden layers of arbitrary size~~
-+ Implement Neuron#eql? and Neuron#hash so that using neurons as keys doesn't end up breaking things (object instances as keys for hashes)
++ Use SecureRandom UUIDs for naming neurons, eventually to be used for comparison (#eql? and #to_h), and reconstitution/modification of networks
++ Robot brain surgery: introduce some helpers for transforming graphs and graph networks, e.g. so that autoencoders can be trained and an MLP can be attached to the end
 
 This repo and its contents belong to [Alexander Marrs](github.com/marrsale), but can be used, copied, shared and modified by anyone for any ethical purpose as long as the attributions said author are left in the code.
 ___
