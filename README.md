@@ -46,17 +46,11 @@ For input [0, 0]	[0.019713717703981025]
 For input [0, 1]	[0.9532905467326417]
 ```
 
-Note that, in this case, our MLP did quite well!
+Note that, in this case, our gave the desired result with a relatively small margin of error. Due to the randomness of the neurons when they are initialized, performance can be highly variable.
 
 ## [Autoencoder](http://en.wikipedia.org/wiki/Autoencoder)
 
 _Documentation coming soon._
-
-## Notes
-
-Due to the randomness of the neurons when they are initialized, performance can be highly variable.  Here is some actual sample output from a run:
-
-Note that as of this writing the only gem included is `pry` which is used to add breakpoints for debugging purposes.  If you don't wish to use this gem, simply comment out that line before you `bundle install`
 
 ## TODOS
 
