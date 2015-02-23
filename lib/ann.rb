@@ -1,28 +1,29 @@
 # COPYLEFT ORIGINAL AUTHOR ALEXANDER MARRS (github.com/marrsale / twitter.com/alx_mars)
 require 'json'
-require './neuron.rb'
+# require './neuron.rb'
 # require 'pry'
 # Multilayer Perceptron
-class MLP
+class ANN
   attr_reader :last_error_term
   # The Multilayer Perceptron initializer
-  # MLP::new()
+  # ANN::new()
   # ex. for an MLP with am input layer of size 2, hidden layer size 2, output layer size 1, by default logistic/classification propagation
-  #   @mlp = MLP.new(input: 2, hidden: [2], output: 1)
+  #   @mlp = ANN.new(input: 2, hidden: [2], output: 1)
   # ex. for an MLP with an input layer n=2, 2 hidden layers n=2, output layer n=1
-  #   @mlp = MLP.new(input: 2, hidden: [2, 2], output: 1)
+  #   @mlp = ANN.new(input: 2, hidden: [2, 2], output: 1)
   def initialize(opts={})
-    # initialize math
+    # initialize mathy bits
     @learning_rate_param             = 0.20 # TODO: not doing anything with this currently
-    @propagation_function            = opts[:propagation_f]     || lambda { |x| 1/(1+Math.exp(-1*(x))) }
-    @derivative_propagation_function = opts[:propagation_deriv] || lambda { |y| y*(1-y) }
+    @propagation_function            = opts[:propagation_f]     || -> x { 1/(1+Math.exp(-1*(x))) }
+    @derivative_propagation_function = opts[:propagation_deriv] || -> y { y*(1-y) }
 
     # initialize layers
-    @input_size  = opts[:input]
-    @hidden_size = opts[:hidden] || [@input_size] # default case is one hidden layer, same size as input
-    @output_size = opts[:output] || @input_size
-    @num_layers  = opts[:hidden].count
-    # populate the layers with new neurons and connect them
+    @input_size   = opts[:input]
+    opts[:hidden] = [opts[:hidden]] unless opts[:hidden].is_a? Array # wrap in array if only a single number is provided (i.e. one hidden layer)
+    @hidden_size  = opts[:hidden] || [@input_size] # default: one hidden layer, same size as input layer
+    @output_size  = opts[:output] || @input_size
+    @num_layers   = opts[:hidden].count
+
     generate_layers!
   end
 
@@ -41,7 +42,7 @@ class MLP
   # Method used for evaluating an input vector
   # Returns a vector of outputs from the output layer neurons
   # NOTE: this method is named with a bang because it changes the state of the network
-  # ex. for an instance of MLP, @mlp, that has been trained the XOR function:
+  # ex. for an instance of ANN, @mlp, that has been trained the XOR function:
   #   @mlp.evaluate([1,1]) # => [0]
   #   @mlp.evaulate([0,1]) # => [1]
   def evaluate!(input_set)
@@ -75,7 +76,7 @@ class MLP
     @last_result = output.map(&:output)
   end
 
-  ##THE ALGORITHM (for a MLP with one hidden layer)
+  # THE ALGORITHM
   # Method used for training the network to a specific set of inputs
   # Returns its error term after every calculation
   # NOTE: this method is named with a bang because it changes the state of the network
@@ -158,18 +159,18 @@ class MLP
 
   # TODO
   # initializes a new neural network from a serialization object (or file)
-  def self.from_serialization(json_mlp)
-    if json_mlp.is_a? String
-      attrs = JSON.parse(json_mlp)
+  def self.from_serialization(json_ann)
+    if json_ann.is_a? String
+      attrs = JSON.parse(json_ann)
     end
 
-    # Create a MLP of correct dimensions
-    @mlp = MLP.new(input: attrs['input_size'], hidden: attrs['hidden_size'], output: attrs['output_size'])
+    # Create an ANN of correct dimensions
+    @ann = ANN.new(input: attrs['input_size'], hidden: attrs['hidden_size'], output: attrs['output_size'])
 
-    # Because the newly initialized mlp has random weights, we want to replace these with the weights from our given attrs
+    # Because the newly initialized ANN has random weights, we want to replace these with the weights from our given attrs
     # Note: because each layer owns the edges between itself and its predecessor layer
     # Set the weights for the hidden layer(s)
-    @mlp.hidden.each_with_index do |hidden_layer, hidden_layer_index| # for each hidden layer
+    @ann.hidden.each_with_index do |hidden_layer, hidden_layer_index| # for each hidden layer
       hidden_layer.each_with_index do |neuron, hidden_neuron_index| # and each neuron in the hidden layer
         neuron.predecessors.each_with_index do |predecessor, predecessor_index| # for each predecessor
           neuron.update_edge!(predecessor, attrs['hidden_layers'][hidden_layer_index][hidden_neuron_index][predecessor_index])
@@ -178,12 +179,12 @@ class MLP
     end
 
     # Set the weights for the output layer
-    @mlp.output.each_with_index do |neuron, neuron_index|
+    @ann.output.each_with_index do |neuron, neuron_index|
       neuron.predecessors.each_with_index do |predecessor, predecessor_index|
         neuron.update_edge!(predecessor, attrs['output_layer'][neuron_index][predecessor_index])
       end
     end
-    return @mlp
+    return @ann
   end
 
   private
@@ -228,4 +229,4 @@ class MLP
     # Generate the output layer
     generate_layer!(array: output, predecessors: hidden.last, size: @output_size)
   end
-end # class MLP
+end # class ANN
