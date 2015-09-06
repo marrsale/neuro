@@ -157,7 +157,7 @@ class ANN::MLP
     self.input = create_layer input_size
     self.hidden = [].tap do |arr|
       num_layers.times do |i|
-        arr << create_layer((hidden_size[i-1]), (arr.last || input))
+        arr << create_layer((hidden_size[i]), (arr.last || input))
       end
     end
     self.output = create_layer output_size, hidden.last

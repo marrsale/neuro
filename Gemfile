@@ -1,3 +1,4 @@
 source "http://rubygems.org"
 
-require 'pry'
+gem 'pry'
+gem 'rspec'
