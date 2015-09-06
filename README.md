@@ -134,7 +134,7 @@ For input: [1, 0, 1],	Output: [1, 0, 1]
 ```
 
 ### TODOS
-- Incorporate basic tests to prevent regression, bugs
+- Incorporate basic tests to prevent regression, bugs (~~MLP~~, Neuron, StackedAutoencoder)
 - Refactor serialization of ANN::MLP
 - Add option for bias node, including weights to shared neuron
 - Implement Graph Network class, for composing graphs of various network types (including serialization)
