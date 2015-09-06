@@ -102,12 +102,36 @@ autoencoder = ANN::StackedAutoEncoder.new input: 3, hidden: 2
 
 # ... train the first layer
 
-s.append_layer! 3
+For iteration #8000, error term is 9.124077827543285e-06..
+For input: [1, 0, 1],	Output: [1, 0, 1]
+For input: [1, 1, 1],	Output: [0, 1, 1]
+For input: [1, 0, 1],	Output: [1, 0, 1]
+For input: [0, 1, 0],	Output: [1, 1, 1]
+For input: [1, 0, 1],	Output: [1, 0, 1]
+For input: [1, 0, 0],	Output: [1, 0, 0]
+For input: [0, 0, 1],	Output: [1, 0, 1]
+For input: [1, 0, 1],	Output: [1, 0, 1]
+For input: [1, 0, 1],	Output: [1, 0, 1]
+For input: [1, 0, 1],	Output: [1, 0, 1]
+
+# Add another layer
+autoencoder.append_layer! 3
 
 # ... train the network with a new layer, now that we've learned some features
 
-```
+For iteration #8000, error term is 1.5303922387867234e-06.
+For input: [1, 0, 1],	Output: [1, 0, 1]
+For input: [1, 1, 1],	Output: [1, 1, 1]
+For input: [1, 0, 1],	Output: [1, 0, 1]
+For input: [0, 1, 0],	Output: [0, 1, 0]
+For input: [1, 0, 1],	Output: [1, 0, 1]
+For input: [1, 0, 0],	Output: [1, 0, 0]
+For input: [0, 0, 1],	Output: [0, 0, 1]
+For input: [1, 0, 1],	Output: [1, 0, 1]
+For input: [1, 0, 1],	Output: [1, 0, 1]
+For input: [1, 0, 1],	Output: [1, 0, 1]
 
+```
 
 #### License
 This repo and its contents belong to [Alexander Marrs](github.com/marrsale), but can be used, copied, shared and modified by anyone for any ethical purpose as long as attributions to the original author are left in the source.

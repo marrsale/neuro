@@ -113,9 +113,8 @@ class ANN::MLP
 
   # initializes a new neural network from a serialization object (or file)
   def self.from_serialization(json_ann)
-    if json_ann.is_a? String
-      attrs = JSON.parse(json_ann)
-    end
+
+    attrs = JSON.parse(json_ann) if json_ann.is_a? String
 
     # Create an ANN of correct dimensions
     @ann = ANN::MLP.new(input: attrs['input_size'], hidden: attrs['hidden_size'], output: attrs['output_size'])
