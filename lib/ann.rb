@@ -1,3 +1,6 @@
+require 'pry'
+require 'json'
+
 # ORIGINAL AUTHOR ALEXANDER MARRS (github.com/marrsale / twitter.com/alx_mars)
 module ANN
 end
@@ -88,7 +91,6 @@ class ANN::MLP
     @last_error_term = (err_sum/2)
   end
 
-  # returns a hash object containing the full contents of the neural network
   def marshall
     {
       learning_rate_param: @learning_rate_param,
@@ -103,40 +105,28 @@ class ANN::MLP
   end
 
   # writes the marshalled network as json
-  def serialize(type=:json)
-    if type == :json
-      marshall.to_json
-    else
-      raise "#{self} can only serialize as JSON data."
-    end
+  def serialize
+    marshall.to_json
   end
 
   # initializes a new neural network from a serialization object (or file)
   def self.from_serialization(json_ann)
-
     attrs = JSON.parse(json_ann) if json_ann.is_a? String
 
     # Create an ANN of correct dimensions
-    @ann = ANN::MLP.new(input: attrs['input_size'], hidden: attrs['hidden_size'], output: attrs['output_size'])
+    ann = ANN::MLP.new(input: attrs['input_size'], hidden: attrs['hidden_size'], output: attrs['output_size'])
 
     # Because the newly initialized ANN has random weights, we want to replace these with the weights from our given attrs
-    # Note: because each layer owns the edges between itself and its predecessor layer
-    # Set the weights for the hidden layer(s)
-    @ann.hidden.each_with_index do |hidden_layer, hidden_layer_index| # for each hidden layer
-      hidden_layer.each_with_index do |neuron, hidden_neuron_index| # and each neuron in the hidden layer
-        neuron.predecessors.each_with_index do |predecessor, predecessor_index| # for each predecessor
-          neuron.update_edge!(predecessor, attrs['hidden_layers'][hidden_layer_index][hidden_neuron_index][predecessor_index])
+    deserialized_layers = (attrs['hidden_layers'] + [attrs['output_layer']])
+    (ann.hidden + [ann.output]).each.with_index do |layer, layer_index|
+      layer.each.with_index do |neuron, neuron_index|
+        neuron.predecessors.each.with_index do |pred, pred_index|
+          neuron.update_edge! pred, deserialized_layers[layer_index][neuron_index][pred_index]
         end
       end
     end
 
-    # Set the weights for the output layer
-    @ann.output.each_with_index do |neuron, neuron_index|
-      neuron.predecessors.each_with_index do |predecessor, predecessor_index|
-        neuron.update_edge!(predecessor, attrs['output_layer'][neuron_index][predecessor_index])
-      end
-    end
-    return @ann
+    ann
   end
 
   def inspect
