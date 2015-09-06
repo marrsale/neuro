@@ -1,5 +1,5 @@
 require_relative '../neuro'
-require 'pry'
+require 'json'
 
 describe ANN::MLP do
   context 'instantiating an mlp' do
@@ -33,9 +33,23 @@ describe ANN::MLP do
     end
   end
 
-  context 'utilizing an mlp' do
-  end
-
   context 'serializing an mlp' do
+    let(:mlp) { ANN::MLP.new input: 2, hidden: 2, output: 1 }
+    let(:mlp_json) { mlp.serialize }
+
+    it 'should be valid json' do
+      expect {
+        JSON.parse mlp_json
+      }.to_not raise_error
+    end
+
+    context 'when deserialized' do
+      it 'should produce the same result' do
+        result = mlp.evaluate! [1,1]
+
+        new_mlp = ANN::MLP.from_serialization mlp_json
+        expect(mlp.evaluate!([1,1])).to eq result
+      end
+    end
   end
 end
