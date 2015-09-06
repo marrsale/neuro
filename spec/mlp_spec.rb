@@ -1,5 +1,4 @@
 require_relative '../neuro'
-require 'json'
 
 describe ANN::MLP do
   context 'instantiating an mlp' do
@@ -29,6 +28,30 @@ describe ANN::MLP do
         layer.each do |neuron|
           expect(neuron.predecessors).to eq prev_layer
         end
+      end
+    end
+  end
+
+  context 'utilizing an mlp' do
+    let(:mlp) { ANN::MLP.new input: 2, hidden: 2, output: 1 }
+
+    context 'when evaluating' do
+      it 'should accept and evaluate a correctly sized array as input' do
+        expect {
+          mlp.evaluate! [1,1]
+        }.to_not raise_error
+      end
+
+      it 'should return an array of the correct dimensions' do
+        expect(mlp.evaluate!([1,1]).size).to eq 1
+      end
+    end
+
+    context 'when training' do
+      it 'should adjust the weights' do
+        expect {
+          mlp.train_pattern! input: [1,0], output: [1]
+        }.to change{mlp.output.first.edges.values.first}
       end
     end
   end

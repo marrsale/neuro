@@ -1,4 +1,3 @@
-require 'pry'
 require 'json'
 
 # ORIGINAL AUTHOR ALEXANDER MARRS (github.com/marrsale / twitter.com/alx_mars)
@@ -130,7 +129,7 @@ class ANN::MLP
   end
 
   def inspect
-    "input: #{input.size}, hidden: [#{hidden.map(&:size).join(', ')}], output: #{output.size}"
+    "< input: #{input.size}, hidden: [#{hidden.map(&:size).join(', ')}], output: #{output.size} >"
   end
 
   private
@@ -158,7 +157,7 @@ end
 class ANN::StackedAutoEncoder < ANN::MLP
   def initialize(opts={})
     autoencoder_opts = opts.dup
-    autoencoder_opts[:output] = opts[:input] unless (opts[:output] || 1) <= opts[:input]
+    autoencoder_opts[:output] ||= opts[:input]
 
     super autoencoder_opts
   end
