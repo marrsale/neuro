@@ -1,4 +1,5 @@
 require '../neuro'
+
 # Generate some random inputs for it to learn
 input_sets = []
 10.times do
@@ -6,12 +7,12 @@ input_sets = []
 end
 
 # Instantiate the autoencoder
-autoencoder = ANN::MLP.new(input: 3, hidden: [2], output: 3)
+autoencoder = ANN::MLP.new input: 3, hidden: [2], output: 3
 
 # Train it to recognize all of our inputs
 10000.times do |n|
   input_sets.each do |set|
-    autoencoder.train_pattern!(input: set, output: set)
+    autoencoder.train_pattern! input: set, output: set
   end
 
   print "\rFor iteration \##{n}, error term is #{autoencoder.last_error_term}." if n != 0 && (n % 2000 == 0)

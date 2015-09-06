@@ -2,6 +2,7 @@
 module ANN
 end
 
+# Multilayer perceptron (logistic by default)
 class ANN::MLP
   attr_reader :last_error_term
   attr_accessor :input, :hidden, :output, :input_size, :hidden_size, :output_size, :num_layers, :learning_rate_param
@@ -161,5 +162,24 @@ class ANN::MLP
       end
     end
     self.output = create_layer output_size, hidden.last
+  end
+end
+
+# Stacked autoencoder
+class ANN::StackedAutoEncoder < ANN::MLP
+  def initialize(opts={})
+    autoencoder_opts = opts.dup
+    autoencoder_opts[:output] = opts[:input] unless (opts[:output] || 1) <= opts[:input]
+
+    super autoencoder_opts
+  end
+
+  def append_layer!(n=nil)
+    n ||= hidden.last.size
+
+    self.hidden_size << n
+    self.num_layers += 1
+    hidden << (create_layer n, hidden.last)
+    output.each { |neuron| neuron.set_edges! hidden.last }
   end
 end

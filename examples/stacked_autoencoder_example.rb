@@ -1,18 +1,19 @@
 require '../neuro'
 
-class ANN::StackedAutoEncoder < ANN::MLP
-  def initialize(opts={})
-    autoencoder_opts = opts.dup
-    autoencoder_opts[:output] = opts[:input] unless (opts[:output] || 1) <= opts[:input]
+def train_and_print s, input_sets, n=10000
+  # Train it to recognize all of our inputs
+  n.times do |n|
+    input_sets.each do |set|
+      s.train_pattern! input: set, output: set
+    end
 
-    super autoencoder_opts
+    print "\rFor iteration \##{n}, error term is #{s.last_error_term}." if n != 0 && (n % 2000 == 0)
   end
 
-  def append_layer!(n=2)
-    self.hidden_size << n
-    self.num_layers += 1
-    hidden << (create_layer n, hidden.last)
-    output.each { |neuron| neuron.set_edges! hidden.last }
+  puts ''
+  # Print out the result of the autoencoder for each
+  input_sets.each do |set|
+    puts "For input: #{set},\tOutput: #{s.evaluate!(set).map { |obj| obj.round }}"
   end
 end
 
@@ -24,35 +25,10 @@ end
 
 s = ANN::StackedAutoEncoder.new input: 3, hidden: 2
 
-# Train it to recognize all of our inputs
-# 10000.times do |n|
-#   input_sets.each do |set|
-#     s.train_pattern! input: set, output: set
-#   end
-#
-#   print "\rFor iteration \##{n}, error term is #{s.last_error_term}." if n != 0 && (n % 2000 == 0)
-# end
-#
-# puts ''
-# # Print out the result of the autoencoder for each
-# input_sets.each do |set|
-#   puts "For input: #{set},\tOutput: #{s.evaluate!(set).map { |obj| obj.round }}"
-# end
+train_and_print s, input_sets
 
+print "\n\n"
 puts 'Appending a new layer!'
-s.append_layer!
+s.append_layer! 3
 
-# Train it to recognize all of our inputs
-10000.times do |n|
-  input_sets.each do |set|
-    s.train_pattern! input: set, output: set
-  end
-
-  print "\rFor iteration \##{n}, error term is #{s.last_error_term}." if n != 0 && (n % 2000 == 0)
-end
-
-puts ''
-# Print out the result of the autoencoder for each
-input_sets.each do |set|
-  puts "For input: #{set},\tOutput: #{s.evaluate!(set).map { |obj| obj.round }}"
-end
+train_and_print s, input_sets
