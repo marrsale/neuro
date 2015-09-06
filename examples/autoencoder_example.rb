@@ -7,7 +7,7 @@ input_sets = []
 end
 
 # Instantiate the autoencoder
-autoencoder = ANN::MLP.new input: 3, hidden: [2], output: 3
+autoencoder = ANN::MLP.new input: 3, hidden: 2, output: 3
 
 # Train it to recognize all of our inputs
 10000.times do |n|

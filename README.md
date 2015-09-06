@@ -91,13 +91,23 @@ For input: [1, 1, 1],	Output: [1, 1, 1]
 For input: [1, 1, 1],	Output: [1, 1, 1]
 ```
 
-## TODOS
+## Stacked Autoencoder
 
-+ ~~Implement MLP#serialize and MLP::from_serialization so that a trained network can be stored~~
-+ ~~Generalize for multiple hidden layers of arbitrary size~~
-+ Use SecureRandom UUIDs for naming neurons, eventually to be used for comparison (#eql? and #to_h), and reconstitution/modification of networks
-+ Robot brain surgery: introduce some helpers for transforming graphs and graph networks, e.g. so that autoencoders can be trained and an MLP can be attached to the end
+Stacked autoencoders are autoencoders which are created layer-wise, in order to train it in a greedy incremental fashion.  A dimensionality- or noise-reducing autoencoder can be created with few (or one) hidden layers, and new layers can be added later and trained to capture higher-level features.  This allows for more flexibility and dynamism when generating preprocessing units.
 
-This repo and its contents belong to [Alexander Marrs](github.com/marrsale), but can be used, copied, shared and modified by anyone for any ethical purpose as long as the attributions said author are left in the code.
-___
-###### COPYLEFT ORIGINAL AUTHOR ALEXANDER MARRS (github.com/marrsale / twitter.com/alx_mars)
+
+Using a stacked autoencoder:
+```
+autoencoder = ANN::StackedAutoEncoder.new input: 3, hidden: 2
+
+# ... train the first layer
+
+s.append_layer! 3
+
+# ... train the network with a new layer, now that we've learned some features
+
+```
+
+
+#### License
+This repo and its contents belong to [Alexander Marrs](github.com/marrsale), but can be used, copied, shared and modified by anyone for any ethical purpose as long as attributions to the original author are left in the source.

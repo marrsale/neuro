@@ -1,6 +1,7 @@
 require '../neuro'
 
-def train_and_print s, input_sets, n=10000
+# helper for our looping and printing
+def train_and_print! s, input_sets, n=10000
   # Train it to recognize all of our inputs
   n.times do |n|
     input_sets.each do |set|
@@ -23,12 +24,16 @@ input_sets = []
   input_sets << [[0,1].sample, [0,1].sample, [0,1].sample]
 end
 
-s = ANN::StackedAutoEncoder.new input: 3, hidden: 2
+# Create our stacked autoencoder
+autoencoder = ANN::StackedAutoEncoder.new input: 3, hidden: 2
 
-train_and_print s, input_sets
+# Iterate 10,000 times
+train_and_print! autoencoder, input_sets
 
+# Append our new layer
+autoencoder.append_layer! 3
 print "\n\n"
 puts 'Appending a new layer!'
-s.append_layer! 3
 
-train_and_print s, input_sets
+# Iterate another 10,000 times
+train_and_print! autoencoder, input_sets
