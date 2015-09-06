@@ -9,10 +9,8 @@ class Neuron
   # - successors (Array): an array of neurons that succeed the current one (will be empty for output layer neurons)
   # - activation_f (Proc): a lambda with the activation function (i.e. a logistic function for classification);
   #                        if none provided, there is a default
-  #                        TODO: linear activation
   # - deriv_f (Proc): a lambda with the derivative of the activation function, used for gradient descent backpropagation;
   #                   if none provided, there is a default
-  #                   TODO: incorporate the derivator method for generic derivations when none provided
   def initialize(opts={})
     self.bias_weight = opts[:bias] || 0.0
 

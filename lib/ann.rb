@@ -5,7 +5,7 @@ end
 # Artificial Neural Network
 class ANN::MLP
   attr_reader :last_error_term
-  attr_accessor :input, :hidden, :output, :input_size, :hidden_size, :output_size, :num_layers
+  attr_accessor :input, :hidden, :output, :input_size, :hidden_size, :output_size, :num_layers, :learning_rate_param
   # The Artificial Neural Network Initializer
   # ANN::new()
   # ex. for an MLP with am input layer of size 2, hidden layer size 2, output layer size 1, by default logistic/classification propagation
@@ -13,7 +13,7 @@ class ANN::MLP
   # ex. for an MLP with an input layer size=2, 2 hidden layers size=2, output layer size=1
   #   @mlp = ANN::MLP.new(input: 2, hidden: [2, 2], output: 1)
   def initialize(opts={})
-    @learning_rate_param = opts[:learning_rate] || 0.20
+    self.learning_rate_param = opts[:learning_rate] || 0.20
 
     # initialize layers
     self.input_size   = opts[:input]
@@ -73,49 +73,39 @@ class ANN::MLP
   #   end
   def train_pattern!(training_set)
     # First have the network evaluate its input so we can see how well we did
-    evaluate!(training_set[:input])
+    evaluate! training_set[:input]
 
     # BACKPROPAGATE ERRORS
     # 6. Calculate error terms for the output units
-    #    Don't apply the changes yet; calculate and set them aside until we calculate errors for whole network
-    output_errors = output.map.with_index do |neuron, j|
-      # we return an array of two elements, the error value and the neuron it belongs to
-      # this is for keying purposes later when we need to update the edges
-      [neuron, ((training_set[:output][j] - neuron.output)*(neuron.gradient))]
+    errors = {}
+    output.each.with_index do |neuron, j|
+      errors[neuron] = (training_set[:output][j] - neuron.output)*neuron.gradient
     end
 
     # 7. Calculate the error terms for the hidden layer neurons
-    hidden_errors = {}
-    # inject with successive arrays instead of just iterating on output errors
-    hidden.reverse.each do |hidden_layer|
-      hidden_errors[hidden_layer] = hidden_layer.map.with_index do |neuron, j|
-        sum = output_errors.inject(0) do |acc, succ|
-          binding.pry
-          acc += succ[1] * neuron.edge(succ[0])
+    #    the actual backprop of error occurs here, without update
+    hidden.reverse.inject(output) do |prev_layer, hidden_layer|
+      hidden_layer.each do |neuron|
+        err_sum = prev_layer.inject(0) do |sum, succ|
+          sum += errors[succ]*(neuron.edge(succ))
         end
-        [neuron, (neuron.gradient)*(sum)]
+        errors[neuron] = neuron.gradient*err_sum
       end
     end
 
-    # 8. Update weights on output layer
-    output.each.with_index do |neuron, j|
-      neuron.predecessors.each do |pred|
-        neuron.update_edge!(pred, (neuron.edge(pred) + (@learning_rate_param)*(output_errors[j][1])*(pred.output)))
-      end
-    end
-
-    # 9. Update weights on hidden layer
-    hidden.each do |hidden_layer|
-      hidden_layer.each.with_index do |neuron, j|
+    # 8, 9. Update weights on output layer
+    #       Update weights on hidden layers
+    (hidden + [output]).reverse.each do |layer|
+      layer.each do |neuron|
         neuron.predecessors.each do |pred|
-          neuron.update_edge!(pred, (neuron.edge(pred) + (@learning_rate_param)*(hidden_errors[hidden_layer][j][1])*(pred.output)))
+          neuron.update_edge! pred, (neuron.edge(pred) + (learning_rate_param)*(errors[neuron])*(pred.output))
         end
       end
     end
 
     # 10. Calculate the error term; this is the metric for how well the network is learning
-    err_sum = output_errors.inject(0) do |sum, error|
-      sum + (error[1] ** 2)
+    err_sum = output.inject(0) do |sum, neuron|
+      sum + (errors[neuron] ** 2)
     end
     @last_error_term = (err_sum/2)
   end
