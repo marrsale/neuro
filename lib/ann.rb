@@ -2,7 +2,6 @@
 module ANN
 end
 
-# Artificial Neural Network
 class ANN::MLP
   attr_reader :last_error_term
   attr_accessor :input, :hidden, :output, :input_size, :hidden_size, :output_size, :num_layers, :learning_rate_param
@@ -17,7 +16,7 @@ class ANN::MLP
 
     # initialize layers
     self.input_size   = opts[:input]
-    opts[:hidden] = [opts[:hidden]] unless opts[:hidden].is_a? Array # wrap in array if only a single number is provided (i.e. one hidden layer)
+    opts[:hidden] = [opts[:hidden]] unless opts[:hidden].is_a? Array
     self.hidden_size  = opts[:hidden] || [@input_size] # default: one hidden layer, same size as input layer
     self.output_size  = opts[:output] || @input_size
     self.num_layers   = opts[:hidden].count
@@ -26,53 +25,32 @@ class ANN::MLP
   end
 
   # Applies the input vector and feeds forward through the graph
-  # eg. for an instance of ANN, @mlp, that has been trained the XOR function:
-  #   @mlp.evaluate([1,1]) # => [0.01958032622180445]
-  #   @mlp.evaulate([0,1]) # => [0.9535374396032609]
   def evaluate!(input_set)
     # FEED FORWARD
     # 1. Apply input vectors to input neurons
-    inputs = input_set
     input.each.with_index do |neuron, j|
-      neuron.net_input = inputs[j]
+      neuron.net_input = input_set[j]
     end
 
-    # 2. Calculate the net input values to the hidden neurons
-    hidden.each do |hidden_layer|
-      hidden_layer.each do |neuron|
+    # 2, 3, 4.  Calculate the net input values to the hidden neurons
+    #           Calculate the outputs from the hidden layer neurons
+    #           Calculate the net input values for the output layer
+    (hidden + [output]).each do |layer|
+      layer.each do |neuron|
         sum = neuron.predecessors.inject(0) do |acc, pred|
-          acc += pred.output * neuron.edge(pred)
+          acc + pred.output * neuron.edge(pred)
         end
         neuron.net_input = neuron.bias_weight + sum
       end
-    end
-
-    # 3, 4. Calculate the outputs from the hidden layer neurons
-    #       Calculate the net input values for the output layer
-    output.each do |neuron|
-      sum = neuron.predecessors.inject(0) do |acc, pred|
-        acc += pred.output * neuron.edge(pred)
-      end
-      neuron.net_input = neuron.bias_weight + sum
     end
 
     # 5. Calculate the output values for the output layer
     output.map(&:output)
   end
 
-  # THE ALGORITHM
   # Method used for training the network to a specific set of inputs
-  # Returns its error term after every calculation
-  # NOTE: this method is named with a bang because it changes the state of the network
-  # example for training an MLP to learn the XOR function
-  #   4000.times do
-  #     @mlp.train_pattern!(input: [1,1], output: [0]) # => Float
-  #     @mlp.train_pattern!(input: [0,1], output: [1]) # => Float
-  #     @mlp.train_pattern!(input: [1,0], output: [1]) # => Float
-  #     @mlp.train_pattern!(input: [0,0], output: [0]) # => Float
-  #   end
   def train_pattern!(training_set)
-    # First have the network evaluate its input so we can see how well we did
+    # First have the network evaluate the training set input
     evaluate! training_set[:input]
 
     # BACKPROPAGATE ERRORS
@@ -83,7 +61,6 @@ class ANN::MLP
     end
 
     # 7. Calculate the error terms for the hidden layer neurons
-    #    the actual backprop of error occurs here, without update
     hidden.reverse.inject(output) do |prev_layer, hidden_layer|
       hidden_layer.each do |neuron|
         err_sum = prev_layer.inject(0) do |sum, succ|

@@ -67,7 +67,7 @@ class Neuron
 
   attr_accessor :activation_function, :activation_deriv
 
-  def initialize_edge(range=(-1.00..1.00))
+  def initialize_edge(range=(0...1.00))
     rand range
   end
 end
