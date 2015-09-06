@@ -133,5 +133,11 @@ For input: [1, 0, 1],	Output: [1, 0, 1]
 
 ```
 
+### TODOS
+- Incorporate basic tests to prevent regression, bugs
+- Refactor serialization of ANN::MLP
+- Add option for bias node, including weights to shared neuron
+- Implement Graph Network class, for composing graphs of various network types (including serialization)
+
 #### License
 This repo and its contents belong to [Alexander Marrs](github.com/marrsale), but can be used, copied, shared and modified by anyone for any ethical purpose as long as attributions to the original author are left in the source.
