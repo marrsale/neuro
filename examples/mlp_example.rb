@@ -1,6 +1,6 @@
 require '../neuro'
 # Generate MLP with one hidden layer
-mlp = ANN::MLP.new input: 2, hidden: 2, output: 1 
+mlp = ANN::MLP.new input: 2, hidden: 2, output: 1
 
 # Train the MLP to learn all the inputs (only 4)
 100000.times do |n|

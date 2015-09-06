@@ -1,7 +1,6 @@
 # COPYLEFT ORIGINAL AUTHOR ALEXANDER MARRS (github.com/marrsale / twitter.com/alx_mars)
 class Neuron
   attr_accessor :weight, :net_input, :predecessors, :edges, :bias_weight
-  attr_reader :activation
 
   # Neuron#new
   # Required arguments:
@@ -16,14 +15,8 @@ class Neuron
   #                   TODO: incorporate the derivator method for generic derivations when none provided
   def initialize(opts={})
     self.bias_weight = opts[:bias] || 0.0
-    self.predecessors = opts[:predecessors] # array of neurons
 
-    self.edges = {}
-    unless input?
-      predecessors.each do |pred|
-        self.edges[pred] = initialize_edge
-      end
-    end
+    set_edges! opts[:predecessors]
 
     # by default the activation function will be logistic
     self.activation_function = opts[:activation_f]  || -> x { 1/(1+Math.exp(-1*(x))) }
@@ -51,8 +44,7 @@ class Neuron
   end
 
   def edge(neuron)
-    # the edge either belongs to self or the other neuron, go get it
-    edges[neuron] || neuron.edge(self)
+    self.edges[neuron] || neuron.edge(self)
   end
 
   def serialize
@@ -62,6 +54,14 @@ class Neuron
       end
     else
       []
+    end
+  end
+
+  def set_edges!(neighbors=nil)
+    self.edges = {}
+    self.predecessors = neighbors || predecessors
+    unless input?
+      predecessors.each { |pred| self.edges[pred] = initialize_edge }
     end
   end
 

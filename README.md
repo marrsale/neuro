@@ -20,7 +20,7 @@ Refer to the `examples/mlp_example.rb` example program included in this reposito
 
 In our example program, we first instantiate a new MLP of with two input neurons, two hidden neurons in a single layer, and a single output neuron:
 ```
-mlp = ANN.new(input: 2, hidden: [2], output: 1)
+mlp = ANN::MLP.new(input: 2, hidden: [2], output: 1)
 ```
 Next, we simply iterate 10,000 times over our training set of only four input sets, training our MLP to recognize each once per iteration:
 
@@ -63,7 +63,7 @@ end
 
 Next, we instantiate our autoencoder:
 ```
-autoencoder = ANN.new(input: 3, hidden: [2], output: 3)
+autoencoder = ANN::MLP.new(input: 3, hidden: [2], output: 3)
 ```
 
 Note that we have 3 input units and 3 output units, but only 2 neurons in the hidden layer: this is how the data compression comes about.  Now, we can train our autoencoder to learn the input set (we train it to return its best approximation of the input):

@@ -5,7 +5,7 @@ end
 # Artificial Neural Network
 class ANN::MLP
   attr_reader :last_error_term
-  attr_accessor :input, :hidden, :output
+  attr_accessor :input, :hidden, :output, :input_size, :hidden_size, :output_size, :num_layers
   # The Artificial Neural Network Initializer
   # ANN::new()
   # ex. for an MLP with am input layer of size 2, hidden layer size 2, output layer size 1, by default logistic/classification propagation
@@ -13,7 +13,7 @@ class ANN::MLP
   # ex. for an MLP with an input layer size=2, 2 hidden layers size=2, output layer size=1
   #   @mlp = ANN::MLP.new(input: 2, hidden: [2, 2], output: 1)
   def initialize(opts={})
-    @learning_rate_param             = opts[:learning_rate] || 0.20
+    @learning_rate_param = opts[:learning_rate] || 0.20
 
     # initialize layers
     self.input_size   = opts[:input]
@@ -86,9 +86,11 @@ class ANN::MLP
 
     # 7. Calculate the error terms for the hidden layer neurons
     hidden_errors = {}
-    hidden.each do |hidden_layer|
+    # inject with successive arrays instead of just iterating on output errors
+    hidden.reverse.each do |hidden_layer|
       hidden_errors[hidden_layer] = hidden_layer.map.with_index do |neuron, j|
         sum = output_errors.inject(0) do |acc, succ|
+          binding.pry
           acc += succ[1] * neuron.edge(succ[0])
         end
         [neuron, (neuron.gradient)*(sum)]
@@ -170,9 +172,11 @@ class ANN::MLP
     return @ann
   end
 
-  private
+  def inspect
+    "input: #{input.size}, hidden: [#{hidden.map(&:size).join(', ')}], output: #{output.size}"
+  end
 
-  attr_accessor :input_size, :hidden_size, :output_size, :num_layers
+  private
 
   def create_layer(size,predecessors=nil)
     [].tap do |arr|
