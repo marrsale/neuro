@@ -40,6 +40,7 @@ describe ANN::StackedAutoEncoder do
     it 'should produce identical results' do
       original_result = autoencoder.evaluate! [1,1]
       new_autoencoder = ANN::StackedAutoEncoder.from_serialization autoencoder.serialize
+      expect(new_autoencoder.class).to eq ANN::StackedAutoEncoder
       expect(new_autoencoder.evaluate!([1,1])).to eq original_result
     end
   end
