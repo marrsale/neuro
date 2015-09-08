@@ -133,6 +133,29 @@ For input: [1, 0, 1],	Output: [1, 0, 1]
 
 ```
 
+## Serializing and Deserializing a Network
+
+If you wish to save a neural network, it's easy to serialize as JSON and later deserialize to use again.  For ANN::MLP and its descendant classes, #serialize can be called on an instance to return itself as a JSON object.  
+
+```
+mlp = ANN::MLP.new input: 2, hidden: 2, output: 1
+
+# ... do some stuff with it
+
+json_string = mlp.serialize
+
+# ... e.g. write the file to a string
+
+File.write 'my_perceptron.ann', json_string
+```
+
+The file can be deserialized by calling ::from_serialization on the class object from which you wish to replicate the network:
+
+```
+save_file = File.read 'my_perceptron.ann'
+duplicate_network = ANN::MLP.from_serialization save_file 
+```
+
 ### TODOS
 - Incorporate basic tests to prevent regression, bugs (~~MLP~~, Neuron, ~~StackedAutoencoder~~)
 - Add option for bias node, including weights to shared neuron

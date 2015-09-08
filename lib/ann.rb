@@ -1,6 +1,7 @@
+# ORIGINAL AUTHOR ALEXANDER MARRS (github.com/marrsale / twitter.com/alx_mars)
+
 require 'json'
 
-# ORIGINAL AUTHOR ALEXANDER MARRS (github.com/marrsale / twitter.com/alx_mars)
 module ANN
 end
 
@@ -17,7 +18,6 @@ class ANN::MLP
   def initialize(opts={})
     self.learning_rate_param = opts[:learning_rate] || 0.20
 
-    # initialize layers
     self.input_size   = opts[:input]
     opts[:hidden] = [opts[:hidden]] unless opts[:hidden].is_a? Array
     self.hidden_size  = opts[:hidden] || [@input_size] # default: one hidden layer, same size as input layer
@@ -112,15 +112,17 @@ class ANN::MLP
   def self.from_serialization(json_ann)
     attrs = JSON.parse(json_ann) if json_ann.is_a? String
 
+    # binding.pry
+
     # Create an ANN of correct dimensions
-    ann = ANN::MLP.new(input: attrs['input_size'], hidden: attrs['hidden_size'], output: attrs['output_size'])
+    ann = self.new input: attrs['input_size'], hidden: attrs['hidden_size'], output: attrs['output_size']
 
     # Because the newly initialized ANN has random weights, we want to replace these with the weights from our given attrs
-    deserialized_layers = (attrs['hidden_layers'] + [attrs['output_layer']])
+    deserializable_layers = (attrs['hidden_layers'] + [attrs['output_layer']])
     (ann.hidden + [ann.output]).each.with_index do |layer, layer_index|
       layer.each.with_index do |neuron, neuron_index|
         neuron.predecessors.each.with_index do |pred, pred_index|
-          neuron.update_edge! pred, deserialized_layers[layer_index][neuron_index][pred_index]
+          neuron.update_edge! pred, deserializable_layers[layer_index][neuron_index][pred_index]
         end
       end
     end
@@ -150,24 +152,5 @@ class ANN::MLP
       end
     end
     self.output = create_layer output_size, hidden.last
-  end
-end
-
-# Stacked autoencoder
-class ANN::StackedAutoEncoder < ANN::MLP
-  def initialize(opts={})
-    autoencoder_opts = opts.dup
-    autoencoder_opts[:output] ||= opts[:input]
-
-    super autoencoder_opts
-  end
-
-  def append_layer!(n=nil)
-    n ||= hidden.last.size
-
-    self.hidden_size << n
-    self.num_layers += 1
-    hidden << (create_layer n, hidden.last)
-    output.each { |neuron| neuron.set_edges! hidden.last }
   end
 end
